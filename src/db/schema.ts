@@ -7,10 +7,57 @@ import {
   time,
   timestamp,
   pgEnum,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const session = pgTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+});
+
+export const account = pgTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
 });
 
 export const clinicsTable = pgTable("clinics", {
@@ -22,8 +69,8 @@ export const clinicsTable = pgTable("clinics", {
     .$onUpdate(() => new Date()),
 });
 
-export const userToClinicsTable = pgTable("user_to_clinics", {
-  userId: uuid("user_id")
+export const usersToClinicsTable = pgTable("users_to_clinics", {
+  userId: text("user_id")
     .notNull() //não pode ser nulo, pois é uma referência obrigatória
     .references(() => usersTable.id), //referencia o id da tabela users
   clinicId: uuid("clinic_id")
@@ -91,7 +138,7 @@ export const appointmentsTable = pgTable("appointments", {
 });
 
 export const usersTableRelations = relations(usersTable, ({ many }) => ({
-  userToClinics: many(userToClinicsTable), //relaciona a tabela users com a tabela user_to_clinics
+  userToClinics: many(usersToClinicsTable), //relaciona a tabela users com a tabela user_to_clinics
 }));
 
 export const clinicsTableRelation = relations(clinicsTable, ({ many }) => ({
@@ -99,18 +146,18 @@ export const clinicsTableRelation = relations(clinicsTable, ({ many }) => ({
   doctors: many(doctorsTable),
   patients: many(patientsTable),
   appointments: many(appointmentsTable),
-  userToClinics: many(userToClinicsTable), //relaciona a tabela clinics com a tabela user_to_clinics
+  userToClinics: many(usersToClinicsTable), //relaciona a tabela clinics com a tabela user_to_clinics
 }));
 
-export const userToClinicsTableRelations = relations(
-  userToClinicsTable,
+export const usersToClinicsTableRelations = relations(
+  usersToClinicsTable,
   ({ one }) => ({
     user: one(usersTable, {
-      fields: [userToClinicsTable.userId], //relaciona o campo userId da tabela user_to_clinics com o campo id da tabela users
+      fields: [usersToClinicsTable.userId], //relaciona o campo userId da tabela user_to_clinics com o campo id da tabela users
       references: [usersTable.id],
     }),
     clinic: one(clinicsTable, {
-      fields: [userToClinicsTable.clinicId], //relaciona o campo clinicId da tabela user_to_clinics com o campo id da tabela clinics
+      fields: [usersToClinicsTable.clinicId], //relaciona o campo clinicId da tabela user_to_clinics com o campo id da tabela clinics
       references: [clinicsTable.id],
     }),
   }),
@@ -155,3 +202,5 @@ export const appointmentsTableRelations = relations(
     }),
   }),
 );
+
+// teste

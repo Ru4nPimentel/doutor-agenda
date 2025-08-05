@@ -1,17 +1,9 @@
-"use client";
-
 import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import SignUpForm from "./components/sign-up-form";
+import LoginForm from "./components/login-form";
 
 const AuthenticationPage = () => {
   return (
@@ -24,16 +16,7 @@ const AuthenticationPage = () => {
           </TabsList>
           <TabsContent value="login">
             <Card>
-              <CardHeader>
-                <CardTitle>Login</CardTitle>
-                <CardDescription>
-                  Faça login na sua conta para continuar.
-                </CardDescription>
-              </CardHeader>
-
-              <CardFooter>
-                <Button>Login</Button>
-              </CardFooter>
+              <LoginForm />
             </Card>
           </TabsContent>
           <TabsContent value="register">
